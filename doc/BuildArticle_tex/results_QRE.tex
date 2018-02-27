@@ -1,0 +1,139 @@
+\section{Results}
+
+\input{../../results/Tables/Sessions}
+
+In the table \ref{tab:rawentry}  we can see the total number of entries in each game by each ideal position. The differences among the number of total trials is due to bankruptcy of the participants that could not longer play.
+
+\input{../../results/Tables/Entries}
+
+\subsection{Distribution of Errors}
+
+Considering how people behave, it is possible to measure the error as the difference between what participants should have done (choose the option with the highest expected payoff) and what they did (proportion of entry). Then, considering the proportion of entry, a negative value means that they enter less than what is optimal, and a positive value means that they over-participate when they should not. In figure \ref{fig:errordist}, it can be seen the distribution of such error by game and position.
+
+
+\begin{figure}[h]
+	
+	\begin{subfigure}{0.5\textwidth}
+		\includegraphics[width=1\linewidth, height=7cm]{../../results/figures/errorDistributionPR_LC} 
+		\caption{PR\_LC}
+		\label{fig:errdistsubim1}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+		\includegraphics[width=1\linewidth, height=7cm]{../../results/figures/errorDistributionPR_HC}
+		\caption{PR\_HC}
+		\label{fig:errdistsubim2}
+	\end{subfigure}
+
+	\begin{subfigure}{0.5\textwidth}
+	\includegraphics[width=1\linewidth, height=6cm]{../../results/figures/errorDistributionRO_LC} 
+	\caption{RO\_LC}
+	\label{fig:errdistsubim3}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+	\includegraphics[width=1\linewidth, height=7cm]{../../results/figures/errorDistributionRO_HC}
+	\caption{RO\_HC}
+	\label{fig:errdistsubim4}
+	\end{subfigure}
+
+	\begin{subfigure}{0.5\textwidth}
+	\includegraphics[width=1\linewidth, height=7cm]{../../results/figures/errorDistributionex70} 
+	\caption{ex70}
+	\label{fig:errdistsubim5}
+	\end{subfigure}
+	\begin{subfigure}{0.5\textwidth}
+	\includegraphics[width=1\linewidth, height=7cm]{../../results/figures/errorDistributionex80}
+	\caption{ex80}
+	\label{fig:errdistsubim6}
+	\end{subfigure}
+	
+	\caption{Distribution of error by game and position. For each participant, the error was calculated as the difference between the proportion of entry observed and the optimal entry according with the expected payoff calculated based on the entry proportion of all participants in the session.}
+	\label{fig:errordist}
+\end{figure}
+
+
+Participants in the central position do not deviate too much from the optimal decision. It is particularly clear in the games whit the same ideal positions $Q=\{20, 30, 80\}$. However, as can be seen in the graph \ref{fig:errdistsubim5}, the behavior in this position is completely random in the game \emph{ex70}, where the extreme positions enter frequently. Furthermore, players in these positions make less mistakes. On the other hand, errors are biased towards over-entering, with some exceptions among participants in the central position. Particularly, in games \emph{PR\_LC} an d\emph{ex80} there is a clear recognition of the over-entering position (figures \ref{fig:errdistsubim1} and \ref{fig:errdistsubim6}). In both cases, that position is the closest to the winning central. This could be due to the fact that, in terms of payoffs, they did not lose too much if the central position wins, but still they continue participating. 
+
+
+
+\subsection{Maximul Likelihood Estimation of $\lambda$}
+
+Data analysis at different levels was calculated by maximum likelihood,
+following directions from (Goeree, Holt, and Palfrey 2016). The
+equilibrium correspondence approach was used: the QRE is calculated for
+a given \(\lambda\) and other parameters (\(\beta\)):
+\(\sigma*_{ij}(\lambda, \beta)\). In order to find this function, a non
+linear equations system with no analytical solution has to be solved.
+This was done using the R package \emph{nleqslv} (Hasselman 2017).
+
+Once this function is constructed, it is possible to find the general
+logLikelihood objective function, and the then optimize it.
+
+\begin{equation}\label{fn:MLE}
+logL(\lambda) = 
+\Sigma^n_{i=1} \Sigma^{J_i}_{j=1} f_{i,j} log(\sigma^*_{ij}(\lambda, \beta))
+\end{equation}
+
+In the objective function \ref{fn:MLE}: \(n=3\), \(J_i = 2\) and
+\(f_{i,j}\) are the times each i-th citizen choose their j-th option. Notice that it was constructed under the assumption of independence of decisions. Also it is assumed that $\lambda$ is the same for all of them.
+The Global and by game estimators are in table \ref{tab:mle}.
+
+\begin{table}[!htbp] \centering 
+	\caption{} 
+	\label{} 
+	\begin{tabular}{@{\extracolsep{5pt}} cccccccc} 
+		\\[-1.8ex]\hline 
+		\hline \\[-1.8ex] 
+		X & Global & PR\_LC & PR\_HC & RO\_LC & RO\_HC & ex70 & ex80 \\ 
+		\hline \\[-1.8ex] 
+		Estimate & $0.078$ & $0.084$ & $0.072$ & $0.098$ & $0.083$ & $0.222$ & $0.075$ \\ 
+		sd & $0.001$ & $0.003$ & $0.001$ & $0.004$ & $0.002$ & $0.007$ & $0.004$ \\ 
+		\hline \\[-1.8ex] 
+	\end{tabular}\label{tab:mle}
+\end{table} 
+
+QRE estimation is a punctual number, but the graph of $\sigma (\lambda, \beta)$ can be built for each game. Figure \ref{fig:QRE} displays such function. We can see that when $\lambda=0$ all the players choose entry with $0.5$ probability, and how they approach smoothly towards a some NE. Also, we can see how well the model explain data. Horizontal lines, with their colors corresponding with each player, are the observed proportion in the experiment. Solid vertical line is the global estimate of $\lambda$, and dotted line is the estimation within each game. Where those lines cross is the QRE prediction.
+
+In general, the value of $\lambda$ is similar among games, except for \textit{ex70} game. The estimated is too large compared with the other games, even when it can be seen that prediction is almost perfect. The reasons for this divergence must be investigated more deeply. The worst adjustment is in the \textit{ex80} game where $q_{30}$'s observed proportion of entry is higher than $q_{50}$'s, a fact that QRE cannot explain.
+
+\begin{figure}
+	\begin{subfigure}{0.6\textwidth}
+		\includegraphics[width=1\linewidth]{../../results/figures/QRE_lambda_MLE}
+		\caption{}
+		\label{fig:qrelambdamle}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.7\textwidth}
+		\includegraphics[width=0.6\linewidth]{../../results/figures/1st_treatments_plot}
+		\caption{}
+		\label{fig:1sttreatmentsplot}
+	\end{subfigure}
+
+\caption{QRE expected as a function of $\lambda$}
+\label{fig:QRE}
+\end{figure}
+
+
+\subsubsection{Other Equilibria}
+
+Other QRE emerge when $\lambda$ increase if there are other NE because they are especial cases of the QRE when $\lambda\rightarrow\infty$.
+When $\lambda$ equals $0$ complete randomness is the only equilibrium, as can be seen in figure \ref{fig:qrelambdamle}. From this point, comes an equilibrium called \emph{logit equilibrium}\cite{Goeree2016}. 
+Stochastic best responses seem continuous (even differentiable) functions of the parameter $\lambda$. However, as this parameters increases there will appear other equilibria from anywhere. 
+
+Those equilibria can be seen in figures \ref{fig:ex70eqilibria} and \ref{fig:prlceqilibria}. It is seen as a discrete change in the probability of entry expected for each ideal point. Particularly, in figure \ref{fig:prlceqilibria}, we can see that equilibrium tended towards $q_{30}$ entering alone, and suddenly it is left out the election when $\lambda$ is around $0.15$. On the other hand, in figure \ref{fig:ex70eqilibria}, the contrary pattern is observed when $\lambda$ is around $0.17$.
+
+\begin{figure}[h]
+	\begin{subfigure}{0.5\textwidth}
+		\includegraphics[width=0.7\linewidth]{../../results/figures/PR_LC_eqilibria}
+		\caption{}
+		\label{fig:prlceqilibria}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.5\textwidth}
+		\includegraphics[width=0.7\linewidth]{../../results/figures/ex70_eqilibria}
+		\caption{}
+		\label{fig:ex70eqilibria}
+	\end{subfigure}
+
+\label{fig:otherQRE}
+\caption{Other equilibrium that emerge when  $\lambda$ increases.}
+\end{figure}
