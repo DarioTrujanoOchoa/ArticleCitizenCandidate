@@ -50,12 +50,13 @@ Election_game <-raw_data %>% group_by(Treatment,Position) %>%
 parentesis_percentage <- function(x){paste("(",round(x*100,digits = 1),")",sep = "")}
 Election_prop <- raw_data %>% group_by(Treatment,Position) %>% 
   do(data.frame(Prop=mean(.$se_postula))) %>% mutate(Prop=parentesis_percentage(Prop)) %>% 
-  spread(Treatment, Prop) %>% data.frame()
+  spread(Treatment, Prop) %>% data.frame() %>% mutate(Position= rep("%",3)) 
 
 Election_table <- data.frame(matrix(nrow = 7,ncol = 7))
 Election_table[c(1,3,5),] <- as.matrix(Election_game)
 Election_table[c(2,4,6),] <- as.matrix(Election_prop)
 Election_table[c(7),] <- c("Total",table(raw_data$Position,raw_data$Treatment)[1,])
+colnames(Election_table) <- colnames(Election_game)
 
 stargazer::stargazer(Election_table,title = "Total number of entries by position and game",
                      header = F,summary = F,out = "results/Tables/Entries.tex",rownames = F,
@@ -88,14 +89,25 @@ probs = c(.1, .9, .2)
 ## Calculations ####
 ### Global ###
 MLE_global <- optim(par=.1,f = neg_logL_global_ABRSTU,election_game=Election_game, probs=c(.5, .5, .5), p_HC=p_HC, p_LC=p_LC, Q=Q,hessian = T)
-neg_logL_global_ABRSTU(election_game = Election_game,lambda = MLE_global_ABRSTU$par, probs = c(0.8, 0.1, 0.8), p_HC = p_HC, p_LC = p_LC, Q = Q)
-### By Game ###
-for(g in names(Election_game)){
-  
+neg_logL_global_ABRSTU(election_game = Election_game,lambda = MLE_global$par, probs = c(0.8, 0.1, 0.8), p_HC = p_HC, p_LC = p_LC, Q = Q)
+Global <- c(MLE_global$par,sqrt(diag(solve(MLE_global$hessian))))
+### # analysis by game ####
+MLE_game<- data.frame(matrix(nrow = 2,ncol= length(Election_game[1,])))
+names(MLE_game) <- colnames(Election_game)
+for(g in 1:length(Election_game[1,])){
+  optim_game <- optim(par = 0.1,f = neg_logL_ABRSTU,election_game=Election_game, probs=c(.5, .5, .5), p_HC=p_HC, p_LC=p_LC, Q=Q,G= g,hessian = T)
+  MLE_game[1,g] <- optim_game$par
+  MLE_game[2,g] <- sqrt(diag(solve(optim_game$hessian)))
 }
-
+MLE <- cbind(MLE_game,Global)
+row.names(MLE) <- c("Lambda","sd")
+save(MLE,"results/MLE.RData")
+stargazer::stargazer(MLE,summary = F,out = "results/Tables/MLE.tex",label = "tab:mle",digits = 4)
 
 #Graphs ####
 raw_data %>% group_by(Treatment,punto_ideal) %>% do(data.frame(mean(.$se_postula)))
 hist()
+ 
+## QRE Path ####
+
 
