@@ -1,5 +1,5 @@
 rm(list=ls())
-setwd("C:/Users/dtruj/Dropbox/Citizen-Candidate/ArticleCitizenCandidate")
+#setwd("C:/Users/dtruj/Dropbox/Citizen-Candidate/ArticleCitizenCandidate")
 
 library(pacman)
 p_load(dplyr)
@@ -31,11 +31,11 @@ data_second$Position <- positions2[match(data_second$punto_ideal,ideal_points2)]
 Code <- read.csv("data/TreatmentsCode.csv")
 raw_data <- rbind(data_1st_by_q,data_second) %>% 
   filter(id_tipo == "R",punto_ideal != -1,Juego %in% Code$CodeInDataBase) %>% 
-  mutate(Treatmet = Code$ShortName[match(Juego,table = Code$CodeInDataBase)]) %>% 
-  mutate(Position = )
+  mutate(Treatment = factor(Code$ShortName[match(Juego,table = Code$CodeInDataBase)],ordered = T,
+                           levels = Code$ShortName))
 
 # General Characteritics by Sessions ####
-Gral_Session <- raw_data %>% group_by(Treatmet,Sesion) %>% 
+Gral_Session <- raw_data %>% group_by(Treatment,Sesion) %>% 
   do(data.frame( No.Participants=max(.$id_usuario),
                  Bankrupcy=sum(.$balance<0))) %>% 
   data.frame()
@@ -44,17 +44,27 @@ stargazer::stargazer(Gral_Session,title = "Characteritics by Sessions",
                      header = F,summary = F,out = "results/Tables/Sessions.tex",rownames = F)
 
 # Entry Proportions ####
-Election_game <-raw_data %>% group_by(Treatmet,Position) %>% 
-  do(data.frame(EntryProp=sum(.$se_postula))) %>% 
-  spread(Treatmet,EntryProp) %>% 
-  data.frame()
+Election_game <-raw_data %>% group_by(Treatment,Position) %>% 
+  do(data.frame(Entry=sum(.$se_postula))) %>% 
+  spread(Treatment,Entry) %>% data.frame()
+parentesis_percentage <- function(x){paste("(",round(x*100,digits = 1),")",sep = "")}
+Election_prop <- raw_data %>% group_by(Treatment,Position) %>% 
+  do(data.frame(Prop=mean(.$se_postula))) %>% mutate(Prop=parentesis_percentage(Prop)) %>% 
+  spread(Treatment, Prop) %>% data.frame()
+
+Election_table <- data.frame(matrix(nrow = 7,ncol = 7))
+Election_table[c(1,3,5),] <- as.matrix(Election_game)
+Election_table[c(2,4,6),] <- as.matrix(Election_prop)
+Election_table[c(7),] <- c("Total",table(raw_data$Position,raw_data$Treatment)[1,])
+
+stargazer::stargazer(Election_table,title = "Total number of entries by position and game",
+                     header = F,summary = F,out = "results/Tables/Entries.tex",rownames = F,
+                     label = "tab:rawentry")
+
 row.names(Election_game)<-Election_game$Position
 Election_game$Position <- NULL
-Total <- table(raw_data$Position,raw_data$Juego)[1,]# total trials
+Total <- table(raw_data$Position,raw_data$Treatment)[1,]# total trials
 Election_game <- t(cbind(t(Election_game),Total))
-
-stargazer::stargazer(Election_game,title = "Total number of entries by position and game",
-                     header = F,summary = F,out = "results/Tables/Entries.tex")
 colnames(Election_game) <- c("PR_LC_q1", "PR_HC_q1", "RO_LC_q1", "RO_HC_q1","PR_LC_q2_ex70","PR_LC_q3_ex80")
 
 #MLE Estimation ####
@@ -76,14 +86,16 @@ p_HC<- p; p_HC[2]<-20
 lambda= .1 # the MLE for the first treatments was .078
 probs = c(.1, .9, .2) 
 ## Calculations ####
+### Global ###
 MLE_global <- optim(par=.1,f = neg_logL_global_ABRSTU,election_game=Election_game, probs=c(.5, .5, .5), p_HC=p_HC, p_LC=p_LC, Q=Q,hessian = T)
 neg_logL_global_ABRSTU(election_game = Election_game,lambda = MLE_global_ABRSTU$par, probs = c(0.8, 0.1, 0.8), p_HC = p_HC, p_LC = p_LC, Q = Q)
-MLE_by_Game <- optim(par = .1,f = neg_logL_ABRSTU,election_game=election_game, probs=c(.5, .5, .5), p_HC=p_HC, p_LC=p_LC, Q=Q,G= c(T, T, T, T, T, T), hessian = T)
-neg_logL_ABRSTU(election_game = election_game_ABRSTU,lambda = MLE_ABRSTU$par, probs = c(0.8, 0.1, 0.8), p_HC = p_HC, p_LC = p_LC, Q = Q,G = c(T, T, T, T, T, T))
-
+### By Game ###
+for(g in names(Election_game)){
+  
+}
 
 
 #Graphs ####
-raw_data %>% group_by(Treatmet,punto_ideal) %>% do(data.frame(mean(.$se_postula)))
+raw_data %>% group_by(Treatment,punto_ideal) %>% do(data.frame(mean(.$se_postula)))
 hist()
 
