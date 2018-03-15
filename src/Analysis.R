@@ -101,7 +101,9 @@ for(g in 1:length(Election_game[1,])){
 }
 MLE <- cbind(MLE_game,Global)
 row.names(MLE) <- c("Lambda","sd")
-save(MLE,"results/MLE.RData")
+save(MLE,file = "results/MLE.RData")
+### Table ####
+load("results/MLE.RData")
 stargazer::stargazer(MLE,summary = F,out = "results/Tables/MLE.tex",label = "tab:mle",digits = 4)
 
 #Graphs ####
